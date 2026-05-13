@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>酒店OTA佣金计算器 | 你每年白白交给携程美团多少钱？</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 60px 20px;
+            color: white;
+        }
+        
+        .hero h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            line-height: 1.3;
+        }
+        
+        .hero h1 .highlight {
+            color: #ff6b6b;
+            background: linear-gradient(90deg, #ff6b6b, #ffa500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            color: #a0a0a0;
+            max-width: 600px;
+            margin: 0 auto 30px;
+            line-height: 1.8;
+        }
+        
+        .hero .emoji-badges {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+        
+        /* Calculator Card */
+        .calculator-card {
+            background: white;
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 900px;
+            margin: 0 auto 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .calculator-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .calculator-header h2 {
+            font-size: 1.5rem;
+            color: #1a1a2e;
+            margin-bottom: 10px;
+        }
+        
+        .calculator-header p {
+            color: #666;
+            font-size: 0.95rem;
+        }
+        
+        .calculator-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+        
+        @media (max-width: 768px) {
+            .calculator-grid {
+                grid-template-columns: 1fr;
+            }
+            .hero h1 {
+                font-size: 1.8rem;
+            }
+        }
+        
+        /* Input Section */
+        .input-section h3 {
+            font-size: 1.1rem;
+            color: #1a1a2e;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-group label {
+            display: block;
+            font-size: 0.9rem;
+            color: #555;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            background: #fafafa;
+        }
+        
+        .input-group input:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+        
+        .input-group .hint {
+            font-size: 0.8rem;
+            color: #999;
+            margin-top: 6px;
+        }
+        
+        /* OTA Selection */
+        .ota-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .ota-option {
+            background: #f5f5f5;
+            border: 2px solid transparent;
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .ota-option:hover {
+            background: #f0f0f0;
+        }
+        
+        .ota-option.selected {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: #667eea;
+        }
+        
+        .ota-option .ota-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #333;
+        }
+        
+        .ota-option .ota-rate {
+            font-size: 0.8rem;
+            color: #ff6b6b;
+            margin-top: 4px;
+        }
+        
+        /* Result Section */
+        .result-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 30px;
+            color: white;
+            text-align: center;
+        }
+        
+        .result-section h3 {
+            font-size: 1rem;
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+        
+        .big-number {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 10px;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+        
+        .big-number .unit {
+            font-size: 1.5rem;
+            font-weight: 400;
+            opacity: 0.8;
+        }
+        
+        .result-label {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+        
+        /* Breakdown */
+        .breakdown {
+            background: rgba(255,255,255,0.15);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        .breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .breakdown-item:last-child {
+            border-bottom: none;
+        }
+        
+        .breakdown-item .label {
+            opacity: 0.9;
+        }
+        
+        .breakdown-item .value {
+            font-weight: 600;
+        }
+        
+        /* Savings Highlight */
+        .savings-box {
+            background: linear-gradient(135deg, #00d2d3, #10ac84);
+            border-radius: 16px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+        
+        .savings-box h4 {
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+        
+        .savings-box .savings-amount {
+            font-size: 2.5rem;
+            font-weight: 800;
+        }
+        
+        .savings-box .savings-note {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            margin-top: 8px;
+        }
+        
+        /* CTA Section */
+        .cta-section {
+            text-align: center;
+            padding: 40px 20px;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+            color: white;
+            padding: 18px 50px;
+            border-radius: 50px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            text-decoration: none;
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.4);
+            transition: all 0.3s;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(255, 107, 107, 0.5);
+        }
+        
+        .cta-subtext {
+            color: #a0a0a0;
+            font-size: 0.9rem;
+            margin-top: 15px;
+        }
+        
+        /* Features Section */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin: 60px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .features {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .feature-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+        
+        .feature-card h3 {
+            color: white;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .feature-card p {
+            color: #a0a0a0;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+        
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-size: 0.85rem;
+        }
+        
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+        }
+        
+        .modal {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .modal h3 {
+            font-size: 1.5rem;
+            color: #1a1a2e;
+            margin-bottom: 15px;
+        }
+        
+        .modal p {
+            color: #666;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+        
+        .modal input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+        
+        .modal button {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .modal button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 1.5rem;
+            color: #999;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Hero Section -->
+        <div class="hero">
+            <div class="emoji-badges">🏨 💸 📉</div>
+            <h1>
+                你的酒店每年白白交给<br>
+                <span class="highlight">携程、美团、飞猪</span><br>
+                多少钱？
+            </h1>
+            <p>
+                用这个计算器算一算<br>
+                答案可能会让你震惊 👇
+            </p>
+        </div>
+        
+        <!-- Calculator -->
+        <div class="calculator-card">
+            <div class="calculator-header">
+                <h2>📊 输入你的酒店数据，一键计算</h2>
+                <p>（数据完全保密，仅用于计算）</p>
+            </div>
+            
+            <div class="calculator-grid">
+                <!-- Input Section -->
+                <div class="input-section">
+                    <h3>🏠 酒店基本信息</h3>
+                    
+                    <div class="input-group">
+                        <label>酒店总房间数</label>
+                        <input type="number" id="rooms" placeholder="例如：80" value="80">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>平均客房单价（元/晚）</label>
+                        <input type="number" id="price" placeholder="例如：288" value="288">
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>年均入住率</label>
+                        <select id="occupancy">
+                            <option value="0.4">40%</option>
+                            <option value="0.5">50%</option>
+                            <option value="0.6" selected>60%</option>
+                            <option value="0.7">70%</option>
+                            <option value="0.8">80%</option>
+                        </select>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label>OTA渠道占比（通过OTA订房的比例）</label>
+                        <select id="otaRatio">
+                            <option value="0.3">30%</option>
+                            <option value="0.4">40%</option>
+                            <option value="0.5" selected>50%</option>
+                            <option value="0.6">60%</option>
+                            <option value="0.7">70%</option>
+                        </select>
+                        <p class="hint">💡 大部分中小酒店 OTA 占比高达 50-70%</p>
+                    </div>
+                    
+                    <h3 style="margin-top: 30px;">📱 已合作的OTA平台（可多选）</h3>
+                    
+                    <div class="ota-options" id="otaOptions">
+                        <div class="ota-option selected" data-rate="0.15" data-name="携程">
+                            <div class="ota-name">携程</div>
+                            <div class="ota-rate">佣金约15%</div>
+                        </div>
+                        <div class="ota-option selected" data-rate="0.18" data-name="美团">
+                            <div class="ota-name">美团</div>
+                            <div class="ota-rate">佣金约18%</div>
+                        </div>
+                        <div class="ota-option" data-rate="0.15" data-name="飞猪">
+                            <div class="ota-name">飞猪</div>
+                            <div class="ota-rate">佣金约15%</div>
+                        </div>
+                        <div class="ota-option" data-rate="0.12" data-name="同程">
+                            <div class="ota-name">同程</div>
+                            <div class="ota-rate">佣金约12%</div>
+                        </div>
+                        <div class="ota-option" data-rate="0.10" data-name="去哪儿">
+                            <div class="ota-name">去哪儿</div>
+                            <div class="ota-rate">佣金约10%</div>
+                        </div>
+                        <div class="ota-option" data-rate="0.20" data-name="其他平台">
+                            <div class="ota-name">其他平台</div>
+                            <div class="ota-rate">佣金约20%</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Result Section -->
+                <div class="result-section">
+                    <h3>🚨 每年你交给OTA的总佣金</h3>
+                    
+                    <div class="big-number">
+                        <span id="totalCommission">¥0</span>
+                        <span class="unit">元</span>
+                    </div>
+                    
+                    <p class="result-label">相当于白白损失了 <span id="lostNights">0</span> 晚客房收入</p>
+                    
+                    <div class="breakdown" id="breakdown">
+                        <div class="breakdown-item">
+                            <span class="label">年客房总收入</span>
+                            <span class="value" id="totalRevenue">¥0</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span class="label">OTA渠道收入</span>
+                            <span class="value" id="otaRevenue">¥0</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span class="label">平均佣金率</span>
+                            <span class="value" id="avgRate">0%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="savings-box">
+                        <h4>💡 如果用自有渠道替代50%的OTA订单</h4>
+                        <div class="savings-amount">每年可节省 <span id="potentialSavings">¥0</span></div>
+                        <div class="savings-note">
+                            3年 = 一辆中级轿车 🚗<br>
+                            5年 = 一套小型公寓首付 🏠
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- CTA Section -->
+        <div class="cta-section">
+            <button class="cta-button" onclick="openModal()">
+                🚀 获取专属降本方案
+            </button>
+            <p class="cta-subtext">
+                免费诊断 | 1对1咨询 | 定制方案<br>
+                已有 <strong style="color: #ff6b6b;">328</strong> 位酒店老板领取
+            </p>
+        </div>
+        
+        <!-- Features Section -->
+        <div class="features">
+            <div class="feature-card">
+                <div class="feature-icon">🌐</div>
+                <h3>免费官网+预订系统</h3>
+                <p>AI智能建站，5分钟上线，打通微信生态，自有渠道订单不抽佣</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🤖</div>
+                <h3>AI新媒体营销</h3>
+                <p>抖音、小红书内容自动生成，AI客服24小时在线，再也不愁不会营销</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📈</div>
+                <h3>私域流量运营</h3>
+                <p>微信小程序+公众号一体化，会员体系+复购激励，把客户变成自己的资产</p>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2025 酒店AI升级专家 | 让每一分钱都花在刀刃上</p>
+        </footer>
+    </div>
+    
+    <!-- Modal -->
+    <div class="modal-overlay" id="modal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModal()">×</button>
+            <h3>🎁 领取你的专属降本方案</h3>
+            <p>留下您的联系方式，我们将为您提供：<br>
+            免费的OTA佣金分析报告 + 定制化降本方案</p>
+            <input type="tel" id="phone" placeholder="请输入手机号（必填）">
+            <input type="text" id="hotelName" placeholder="酒店名称（选填）">
+            <input type="text" id="wechat" placeholder="微信号（选填，方便联系）">
+            <button onclick="submitForm()">立即领取 📱</button>
+        </div>
+    </div>
+
+    <script>
+        // OTA options selection
+        const otaOptions = document.querySelectorAll('.ota-option');
+        let selectedOTAs = [
+            { name: '携程', rate: 0.15 },
+            { name: '美团', rate: 0.18 }
+        ];
+        
+        otaOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                option.classList.toggle('selected');
+                
+                const name = option.dataset.name;
+                const rate = parseFloat(option.dataset.rate);
+                
+                if (option.classList.contains('selected')) {
+                    selectedOTAs.push({ name, rate });
+                } else {
+                    selectedOTAs = selectedOTAs.filter(ota => ota.name !== name);
+                }
+                
+                calculate();
+            });
+        });
+        
+        // Calculate function
+        function calculate() {
+            const rooms = parseInt(document.getElementById('rooms').value) || 0;
+            const price = parseInt(document.getElementById('price').value) || 0;
+            const occupancy = parseFloat(document.getElementById('occupancy').value);
+            const otaRatio = parseFloat(document.getElementById('otaRatio').value);
+            
+            // Calculate yearly revenue
+            const daysPerYear = 365;
+            const totalRevenue = rooms * price * occupancy * daysPerYear;
+            const otaRevenue = totalRevenue * otaRatio;
+            
+            // Calculate average commission rate
+            const avgRate = selectedOTAs.length > 0 
+                ? selectedOTAs.reduce((sum, ota) => sum + ota.rate, 0) / selectedOTAs.length 
+                : 0.15;
+            
+            // Calculate total commission
+            const totalCommission = otaRevenue * avgRate;
+            
+            // Calculate potential savings (if 50% of OTA orders move to direct booking)
+            const potentialSavings = totalCommission * 0.5;
+            
+            // Calculate lost nights (how many free nights worth of revenue is lost)
+            const lostNights = Math.round(potentialSavings / price);
+            
+            // Update display
+            document.getElementById('totalCommission').textContent = '¥' + formatNumber(Math.round(totalCommission));
+            document.getElementById('totalRevenue').textContent = '¥' + formatNumber(Math.round(totalRevenue));
+            document.getElementById('otaRevenue').textContent = '¥' + formatNumber(Math.round(otaRevenue));
+            document.getElementById('avgRate').textContent = (avgRate * 100).toFixed(0) + '%';
+            document.getElementById('potentialSavings').textContent = '¥' + formatNumber(Math.round(potentialSavings));
+            document.getElementById('lostNights').textContent = formatNumber(lostNights);
+        }
+        
+        function formatNumber(num) {
+            if (num >= 10000) {
+                return (num / 10000).toFixed(1) + '万';
+            }
+            return num.toLocaleString();
+        }
+        
+        // Input listeners
+        document.getElementById('rooms').addEventListener('input', calculate);
+        document.getElementById('price').addEventListener('input', calculate);
+        document.getElementById('occupancy').addEventListener('change', calculate);
+        document.getElementById('otaRatio').addEventListener('change', calculate);
+        
+        // Modal functions
+        function openModal() {
+            document.getElementById('modal').classList.add('active');
+        }
+        
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+        
+        function submitForm() {
+            const phone = document.getElementById('phone').value;
+            if (!phone || phone.length < 11) {
+                alert('请输入正确的手机号');
+                return;
+            }
+            
+            // In a real implementation, this would send to a backend
+            alert('✅ 提交成功！\n\n我们的顾问将在24小时内联系您，\n为您定制专属的酒店降本方案。\n\n📱 请保持手机畅通！');
+            closeModal();
+        }
+        
+        // Close modal on overlay click
+        document.getElementById('modal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('modal')) {
+                closeModal();
+            }
+        });
+        
+        // Initial calculation
+        calculate();
+    </script>
+</body>
+</html>
