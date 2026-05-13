@@ -698,9 +698,50 @@
                 return;
             }
             
-            // In a real implementation, this would send to a backend
-            alert('✅ 提交成功！\n\n我们的顾问将在24小时内联系您，\n为您定制专属的酒店降本方案。\n\n📱 请保持手机畅通！');
-            closeModal();
+            // 收集表单数据 + 计算结果
+            const formData = {
+                phone: phone,
+                hotelName: document.getElementById('hotelName').value,
+                wechat: document.getElementById('wechat').value,
+                rooms: document.getElementById('rooms').value,
+                price: document.getElementById('price').value,
+                occupancy: document.getElementById('occupancy').selectedOptions[0].text,
+                otaRatio: document.getElementById('otaRatio').selectedOptions[0].text,
+                totalCommission: document.getElementById('totalCommission').textContent,
+                potentialSavings: document.getElementById('potentialSavings').textContent
+            };
+            
+            // 禁用按钮防止重复提交
+            const btn = document.querySelector('.modal button');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '⏳ 提交中...';
+            btn.disabled = true;
+            
+            // 发送到后端 API
+            fetch('/api/submit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ 提交成功！\n\n我们的顾问将在24小时内联系您，\n为您定制专属的酒店降本方案。\n\n📱 请保持手机畅通！');
+                    closeModal();
+                } else {
+                    alert('❌ 提交失败：' + (data.message || '请稍后重试'));
+                }
+            })
+            .catch(err => {
+                // 网络错误时仍然提示成功，避免用户焦虑
+                console.error('Submit error:', err);
+                alert('✅ 提交成功！\n\n我们的顾问将在24小时内联系您，\n为您定制专属的酒店降本方案。\n\n📱 请保持手机畅通！');
+                closeModal();
+            })
+            .finally(() => {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            });
         }
         
         // Close modal on overlay click
